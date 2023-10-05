@@ -337,7 +337,12 @@ class SonarrYTDL(object):
             video_url = None
             if 'entries' in result and len(result['entries']) > 0:
                 try:
-                    video_url = result['entries'][0].get('webpage_url')
+                    double_checked_entries = [entry for entry in result['entries'] if upperescape(entry.get('title')) == ydl_opts['matchtitle']]
+
+                    if len(double_checked_entries) > 0:
+                        video_url = double_checked_entries[0].get('webpage_url')
+                    else:
+                        video_url = result['entries'][0].get('webpage_url')
                 except Exception as e:
                     logger.error(e)
             else:
@@ -348,6 +353,8 @@ class SonarrYTDL(object):
                 logger.error('No video_url')
                 return False, ''
             else:
+                logger.debug('Found video_url')
+                logger.debug(video_url)
                 return True, video_url
 
     def download(self, series, episodes):
