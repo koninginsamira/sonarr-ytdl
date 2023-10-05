@@ -1,5 +1,9 @@
-# sonarr-ytdl (a fork of sonarr_youtubedl by [@whatdaybob](https://github.com/whatdaybob))
-[![pipeline status](https://gitlab.com/FoxAmes/sonarr-ytdl/badges/main/pipeline.svg)](https://gitlab.com/FoxAmes/sonarr-ytdl/-/commits/main) 
+# sonarr-ytdl (a fork of a fork by [@FoxAmes](https://gitlab.com/FoxAmes) of sonarr_youtubedl by [@whatdaybob](https://github.com/whatdaybob))
+
+This fork is just to make some personal changes that I do not feel comfortable making a PR for, namely:
+- Issue where the same (wrong) video is being downloaded when trying to extract episodes from the streaming service Dropout
+
+# Addition by [@FoxAmes](https://gitlab.com/FoxAmes)
 
 This fork is to address some outstanding issues with the upstream that have gone unaddressed for some time:
 - Issue triggering rescans [#52](https://github.com/whatdaybob/sonarr_youtubedl/pull/52)
