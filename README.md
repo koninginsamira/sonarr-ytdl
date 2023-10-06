@@ -3,6 +3,8 @@
 This fork is just to make some personal changes that I do not feel comfortable making a PR for, namely:
 - Issue where the same (wrong) video is being downloaded when trying to extract episodes from the streaming service Dropout
 
+Use `koninginsamira/sonarr-ytdl:latest` for adding this image to your Docker compose file.
+
 # Addition by [@FoxAmes](https://gitlab.com/FoxAmes)
 
 This fork is to address some outstanding issues with the upstream that have gone unaddressed for some time:
