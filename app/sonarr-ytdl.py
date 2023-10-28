@@ -196,11 +196,9 @@ class SonarrYTDL(object):
                     if 'regex' in wnt:
                         regex = wnt['regex']
                         if 'sonarr' in regex:
-                            ser['sonarr_regex_match'] = regex['sonarr']['match']
-                            ser['sonarr_regex_replace'] = regex['sonarr']['replace']
+                            ser['sonarr_regex'] = regex['sonarr']
                         if 'site' in regex:
-                            ser['site_regex_match'] = regex['site']['match']
-                            ser['site_regex_replace'] = regex['site']['replace']
+                            ser['site_regex'] = regex['site']
                     if 'offset' in wnt:
                         ser['offset'] = wnt['offset']
                     if 'cookies_file' in wnt:
@@ -241,10 +239,28 @@ class SonarrYTDL(object):
                 elif eps_date > now:
                     episodes.remove(eps)
                 else:
-                    if 'sonarr_regex_match' in ser:
-                        match = ser['sonarr_regex_match']
-                        replace = ser['sonarr_regex_replace']
-                        eps['title'] = re.sub(match, replace, eps['title'])
+                    if 'sonarr_regex' in ser:
+                        original_title = eps['title']
+                        regex = ser['sonarr_regex']
+                      
+                        if isinstance(regex, (list, tuple)):
+                          for item in regex:
+                            match = item['match']
+                            replace = item['replace']
+                            
+                            eps['title'] = re.sub(match, replace, eps['title'])
+                        else:
+                          match = regex['match']
+                          replace = regex['replace']
+                          
+                          eps['title'] = re.sub(match, replace, eps['title'])
+
+                        if original_title != eps['title']:
+                          logger.debug('"{0}" was replaced with "{1}"'.format(
+                            original_title,
+                            eps['title']
+                          ))
+                          
                     needed.append(eps)
                     continue
             if len(episodes) == 0:
@@ -353,8 +369,7 @@ class SonarrYTDL(object):
                 logger.error('No video_url')
                 return False, ''
             else:
-                logger.debug('Found video_url')
-                logger.debug(video_url)
+                logger.debug('Found video_url: {0}'.format(video_url))
                 return True, video_url
 
     def download(self, series, episodes):
