@@ -1,3 +1,4 @@
+import difflib
 import requests
 import urllib.parse
 import yt_dlp
@@ -34,7 +35,6 @@ class SonarrYTDL(object):
         cfg = checkconfig()
 
         # Sonarr_YTDL Setup
-
         try:
             self.set_scan_interval(cfg['sonarrytdl']['scan_interval'])
             try:
@@ -340,7 +340,7 @@ class SonarrYTDL(object):
             logger.debug(ytdlopts)
         return ytdlopts
 
-    def ytsearch(self, ydl_opts, playlist):
+    def ytsearch(self, target_title, ydl_opts, playlist):
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 result = ydl.extract_info(
@@ -351,18 +351,23 @@ class SonarrYTDL(object):
             logger.error(e)
         else:
             video_url = None
-            if 'entries' in result and len(result['entries']) > 0:
-                try:
-                    double_checked_entries = [entry for entry in result['entries'] if upperescape(entry.get('title')) == ydl_opts['matchtitle']]
 
-                    if len(double_checked_entries) > 0:
-                        video_url = double_checked_entries[0].get('webpage_url')
-                    else:
-                        video_url = result['entries'][0].get('webpage_url')
-                except Exception as e:
-                    logger.error(e)
+            is_playlist = 'entries' in result and len(result['entries']) > 0
+            if is_playlist:
+                multiple_matches = len(result['entries']) > 1
+                if multiple_matches:
+                    found_titles = [item['title'] for item in result['entries']]
+                    closest_match = difflib.get_close_matches(target_title, found_titles, 1, 0.4)
+
+                    if closest_match:
+                        index = found_titles.index(closest_match[0])
+                        closest_entry = result['entries'][index]
+                        video_url = closest_entry['webpage_url']
+                else:
+                    video_url = result['entries'][0]['webpage_url']
             else:
                 video_url = result.get('webpage_url')
+
             if playlist == video_url:
                 return False, ''
             if video_url is None:
@@ -384,7 +389,8 @@ class SonarrYTDL(object):
                         if 'cookies_file' in ser:
                             cookies = ser['cookies_file']
                         ydleps = self.ytdl_eps_search_opts(upperescape(eps['title']), ser['playlistreverse'], cookies)
-                        found, dlurl = self.ytsearch(ydleps, url)
+                        found, dlurl = self.ytsearch(eps['title'], ydleps, url)
+                        return
                         if found:
                             logger.info("    {}: Found - {}:".format(e + 1, eps['title']))
                             ytdl_format_options = {

@@ -3,7 +3,7 @@ env/
 __pycache__/
 *.backup
 .venv
-*_cookies.txt
+*cookies.txt
 sonarr_root/
 config/config.yml
 config/config.yml.template
