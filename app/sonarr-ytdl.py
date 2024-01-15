@@ -395,7 +395,7 @@ class SonarrYTDL(object):
                             cookies = ser['cookies_file']
                         ydleps = self.ytdl_eps_search_opts(upperescape(eps['title']), ser['playlistreverse'], cookies)
                         found, dlurl = self.ytsearch(eps['title'], ydleps, url)
-                        return
+
                         if found:
                             logger.info("    {}: Found - {}:".format(e + 1, eps['title']))
                             ytdl_format_options = {
