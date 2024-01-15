@@ -390,11 +390,21 @@ class SonarrYTDL(object):
                 for e, eps in enumerate(episodes):
                     if ser['id'] == eps['seriesId']:
                         cookies = None
-                        url = ser['url']
                         if 'cookies_file' in ser:
                             cookies = ser['cookies_file']
+
                         ydleps = self.ytdl_eps_search_opts(upperescape(eps['title']), ser['playlistreverse'], cookies)
-                        found, dlurl = self.ytsearch(eps['title'], ydleps, url)
+
+                        multiple_url = isinstance(ser['url'], (list, tuple))
+                        if multiple_url:
+                          index = 0
+                          while not found:
+                            url = ser['url'][index]
+                            found, dlurl = self.ytsearch(eps['title'], ydleps, url)
+                            index = index + 1
+                        else:
+                            url = ser['url']
+                            found, dlurl = self.ytsearch(eps['title'], ydleps, url)
 
                         if found:
                             logger.info("    {}: Found - {}:".format(e + 1, eps['title']))
