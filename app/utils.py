@@ -19,23 +19,15 @@ def upperescape(string):
         ``string``: str new string
     """
     # UPPERCASE as YTDL is case insensitive for ease.
-    string = string.upper() 
+    string = string.upper()
     # Remove quote characters as YTDL converts these.
-    string = string.replace('’',"'") 
+    string = string.replace('’',"'")
     string = string.replace('“','"')
     string = string.replace('”','"')
-    # Escape the characters
-    string = re.escape(string)
+    # Treat any non-letter character as an optional non-letter wildcard
+    string = re.sub('[^A-Z]','[^A-Z]*', string)
     # Make it look for and as whole or ampersands
     string = string.replace('\\ AND\\ ','\\ (AND|&)\\ ')
-    # Make punctuation optional for human error
-    string = string.replace("'","([']?)") # optional apostrophe
-    string = string.replace(",","([,]?)") # optional comma
-    string = string.replace("!","([!]?)") # optional question mark
-    string = string.replace("\\.","([\\.]?)") # optional period
-    string = string.replace("\\?","([\\?]?)") # optional question mark
-    string = string.replace(":","([:]?)") # optional colon
-    string = re.sub("S\\\\", "([']?)"+"S\\\\", string) # optional belonging apostrophe (has to be last due to question mark)
     return string
 
 
