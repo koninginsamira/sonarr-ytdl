@@ -356,13 +356,8 @@ class SonarrYTDL(object):
             if is_playlist:
                 multiple_matches = len(result['entries']) > 1
                 if multiple_matches:
-                    found_titles = [item['title'] for item in result['entries']]
-                    closest_match = difflib.get_close_matches(target_title, found_titles, 1, 0.4)
-
-                    if closest_match:
-                        index = found_titles.index(closest_match[0])
-                        closest_entry = result['entries'][index]
-                        video_url = closest_entry['webpage_url']
+                    closest_match = self.find_closest_match(target_title, result['entries'])
+                    video_url = closest_match['webpage_url']
                 else:
                     video_url = result['entries'][0]['webpage_url']
             else:
@@ -376,6 +371,16 @@ class SonarrYTDL(object):
             else:
                 logger.debug('Found video_url: {0}'.format(video_url))
                 return True, video_url
+
+    # Find closest title match in array of entries
+    # NOTE: This should not be necessary, but for some reason yt-dlp doesn't stop extracting on match from Dropout
+    def find_closest_match(self, target_title, entries):
+        found_titles = [item['title'] for item in entries]
+        closest_match = difflib.get_close_matches(target_title, found_titles, 1, 0.4)
+
+        if closest_match:
+            index = found_titles.index(closest_match[0])
+            return entries[index]
 
     def download(self, series, episodes):
         if len(series) != 0:
