@@ -389,6 +389,8 @@ class SonarrYTDL(object):
                 logger.info("  {}:".format(ser['title']))
                 for e, eps in enumerate(episodes):
                     if ser['id'] == eps['seriesId']:
+                        found = False
+                        
                         cookies = None
                         if 'cookies_file' in ser:
                             cookies = ser['cookies_file']
