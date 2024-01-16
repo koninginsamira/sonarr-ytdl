@@ -211,7 +211,7 @@ class SonarrYTDL(object):
                 self.sonarr_api_version
             ),
             {
-                'folder': DATAPATH,
+                'folder': DATAPATH if not DATAPATH.startswith('.') else DATAPATH[1:],
                 'filterExistingFiles': False
             }
         ).json()
@@ -233,7 +233,7 @@ class SonarrYTDL(object):
                 'importMode': 'move'
             }
 
-            res = self.request_put(
+            res = self.request_post(
                 '{}/{}/command'.format(
                     self.base_url,
                     self.sonarr_api_version
