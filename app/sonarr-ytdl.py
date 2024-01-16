@@ -467,11 +467,11 @@ class SonarrYTDL(object):
                         if multiple_url:
                           index = 0
                           while not found:
-                            url = ser['url'][index]
+                            url = self.format_url(ser['url'][index], eps)
                             found, dlurl = self.ytsearch(eps['title'], ydleps, url)
                             index = index + 1
                         else:
-                            url = ser['url']
+                            url = self.format_url(ser['url'], eps)
                             found, dlurl = self.ytsearch(eps['title'], ydleps, url)
 
                         if found:
@@ -532,6 +532,9 @@ class SonarrYTDL(object):
                             logger.info("    {}: Missing - {}:".format(e + 1, eps['title']))
         else:
             logger.info("Nothing to process")
+
+    def format_url(self, base_url, dict):
+        return base_url.format(**dict)
 
     def set_scan_interval(self, interval):
         global SCANINTERVAL
