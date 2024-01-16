@@ -12,7 +12,8 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "CONFIGPATH": "./config/config.yml"
+                "CONFIGPATH": "./config/config.yml",
+                "DATAPATH": "./data/ytdlp/"
             }
         }
     ]

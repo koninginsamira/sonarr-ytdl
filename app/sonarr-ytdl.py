@@ -25,6 +25,7 @@ now = datetime.now()
 
 CONFIGFILE = os.environ['CONFIGPATH']
 CONFIGPATH = CONFIGFILE.replace('config.yml', '')
+DATAPATH = os.environ['DATAPATH']
 SCANINTERVAL = 60
 
 
@@ -143,6 +144,26 @@ class SonarrYTDL(object):
         res = requests.get(url)
         return res
 
+    def request_post(self, url, params=None, jsondata=None):
+        logger.debug('Begin POST with url: {}'.format(url))
+        """Wrapper on the requests.post"""
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        args = (
+            ('apikey', self.api_key),
+        )
+        if params is not None:
+            args.update(params)
+            logger.debug('Begin POST with params: {}'.format(params))
+        res = requests.post(
+            url,
+            headers=headers,
+            params=args,
+            json=jsondata
+        )
+        return res
+
     def request_put(self, url, params=None, jsondata=None):
         logger.debug('Begin PUT with url: {}'.format(url))
         """Wrapper on the requests.put"""
@@ -155,7 +176,7 @@ class SonarrYTDL(object):
         if params is not None:
             args.update(params)
             logger.debug('Begin PUT with params: {}'.format(params))
-        res = requests.post(
+        res = requests.put(
             url,
             headers=headers,
             params=args,
@@ -178,6 +199,51 @@ class SonarrYTDL(object):
             None, 
             data
         )
+        return res.json()
+    
+    def import_episode(self):
+        """Tell Sonarr to import new episode"""
+        logger.debug('Begin call Sonarr to generate data on new episodes')
+
+        import_files = self.request_get(
+            "{}/{}/manualimport".format(
+                self.base_url,
+                self.sonarr_api_version
+            ),
+            {
+                'folder': DATAPATH,
+                'filterExistingFiles': False
+            }
+        ).json()
+
+        for import_data in import_files:
+            logger.debug('Begin call Sonarr to import new episode at: {}'.format(import_data['path']))
+
+            body = {
+                'name': 'ManualImport',
+                'files': [
+                    {
+                        'path': import_data['path'],
+                        'seriesId': import_data['series']['id'],
+                        'episodeIds': [eps['id'] for eps in import_data['episodes']],
+                        'quality': import_data['quality'],
+                        'languages': import_data['languages']
+                    }
+                ],
+                'importMode': 'move'
+            }
+
+            res = self.request_put(
+                '{}/{}/command'.format(
+                    self.base_url,
+                    self.sonarr_api_version
+                ),
+                None, 
+                body
+            )
+
+            # TODO: Should I maybe wait for the import process to finish?
+
         return res.json()
 
     def filterseries(self):
@@ -410,17 +476,20 @@ class SonarrYTDL(object):
 
                         if found:
                             logger.info("    {}: Found - {}:".format(e + 1, eps['title']))
+
+                            file_location = '{0}{2} - S{1}E{3} - {4} WEBDL.%(ext)s'.format(
+                                DATAPATH,
+                                eps['seasonNumber'],
+                                ser['title'],
+                                eps['episodeNumber'],
+                                eps['title']
+                            )
+
                             ytdl_format_options = {
                                 'format': self.ytdl_format,
                                 'quiet': True,
                                 'merge-output-format': 'mp4',
-                                'outtmpl': '/sonarr_root{0}/Season {1}/{2} - S{1}E{3} - {4} WEBDL.%(ext)s'.format(
-                                    ser['path'],
-                                    eps['seasonNumber'],
-                                    ser['title'],
-                                    eps['episodeNumber'],
-                                    eps['title']
-                                ),
+                                'outtmpl': file_location,
                                 'progress_hooks': [ytdl_hooks],
                                 'noplaylist': True,
                             }
@@ -455,7 +524,7 @@ class SonarrYTDL(object):
                                 logger.debug(ytdl_format_options)
                             try:
                                 yt_dlp.YoutubeDL(ytdl_format_options).download([dlurl])
-                                self.rescanseries(ser['id'])
+                                self.import_episode()
                                 logger.info("      Downloaded - {}".format(eps['title']))
                             except Exception as e:
                                 logger.error("      Failed - {} - {}".format(eps['title'], e))

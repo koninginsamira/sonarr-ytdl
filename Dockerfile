@@ -34,5 +34,6 @@ RUN \
 
 # ENV setup
 ENV CONFIGPATH /config/config.yml
+ENV DATAPATH /data/ytdlp/
 
 CMD [ "python", "-u", "/app/sonarr-ytdl.py" ]
