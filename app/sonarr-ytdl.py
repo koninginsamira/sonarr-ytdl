@@ -421,13 +421,13 @@ class SonarrYTDL(object):
             is_playlist = 'entries' in result and len(result['entries']) > 0
             if is_playlist:
                 multiple_matches = len(result['entries']) > 1
-                single_match = len(result['entries']) == 1
 
                 if multiple_matches:
                     closest_match = self.find_closest_match(target_title, result['entries'])
                     video_url = closest_match['webpage_url']
-                elif single_match:
-                    video_url = result['entries'][0]['webpage_url']
+                else:
+                    if result['entries'][0]:
+                        video_url = result['entries'][0]['webpage_url']
             else:
                 video_url = result.get('webpage_url')
 
@@ -468,7 +468,7 @@ class SonarrYTDL(object):
                         multiple_url = isinstance(ser['url'], (list, tuple))
                         if multiple_url:
                           index = 0
-                          while not found:
+                          while not found and index < len(ser['url']):
                             url = self.format_url(ser['url'][index], eps)
                             found, dlurl = self.ytsearch(eps['title'], ydleps, url)
                             index = index + 1
