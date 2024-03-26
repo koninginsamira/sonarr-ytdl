@@ -424,7 +424,8 @@ class SonarrYTDL(object):
 
                 if multiple_matches:
                     closest_match = self.find_closest_match(target_title, result['entries'])
-                    video_url = closest_match['webpage_url']
+                    if closest_match:
+                        video_url = closest_match['webpage_url']
                 else:
                     if result['entries'][0]:
                         video_url = result['entries'][0]['webpage_url']
