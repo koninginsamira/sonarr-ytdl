@@ -421,10 +421,12 @@ class SonarrYTDL(object):
             is_playlist = 'entries' in result and len(result['entries']) > 0
             if is_playlist:
                 multiple_matches = len(result['entries']) > 1
+                single_match = len(result['entries']) == 1
+
                 if multiple_matches:
                     closest_match = self.find_closest_match(target_title, result['entries'])
                     video_url = closest_match['webpage_url']
-                else:
+                elif single_match:
                     video_url = result['entries'][0]['webpage_url']
             else:
                 video_url = result.get('webpage_url')
