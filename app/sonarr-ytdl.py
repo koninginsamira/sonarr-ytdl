@@ -444,7 +444,7 @@ class SonarrYTDL(object):
     # Find closest title match in array of entries
     # NOTE: This should not be necessary, but for some reason yt-dlp doesn't stop extracting on match from Dropout
     def find_closest_match(self, target_title, entries):
-        found_titles = [item['title'] for item in entries]
+        found_titles = [item['title'] for item in entries if item is not None]
         closest_match = difflib.get_close_matches(target_title, found_titles, 1, 0.4)
 
         if closest_match:
